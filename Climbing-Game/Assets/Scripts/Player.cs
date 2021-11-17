@@ -5,16 +5,18 @@ using UnityEngine.Animations.Rigging;
 
 public class Player : MonoBehaviour
 {
-    //[SerializeField] private float degrees = 45;
-        
-    [SerializeField] private Transform target = null;
+    //[SerializeField] private Transform target = null;
+    [SerializeField] private Transform[] targets;
     [SerializeField] private Transform hold = null;
 
     [SerializeField] private Camera mainCam = null;
     [SerializeField] private ChainIKConstraint leftHand = null;
+    [SerializeField] private ChainIKConstraint rightHand = null;
     [SerializeField] private MultiAimConstraint head = null;
 
+    private Transform activeTarget = null;
     private bool clicking;
+    private string clickTarget = null;
 
     private void Start()
     {
@@ -22,6 +24,7 @@ public class Player : MonoBehaviour
             mainCam = Camera.main;
 
         leftHand.weight = 0;
+        rightHand.weight = 0;
         head.weight = 0;
     }
 
@@ -30,6 +33,13 @@ public class Player : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             clicking = true;
+
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit))
+            {
+                clickTarget = hit.collider.gameObject.name;
+            }
         }
 
         if (Input.GetMouseButtonUp(0))
@@ -41,17 +51,44 @@ public class Player : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (clicking)
+        if (clicking) // && clickTarget.Equals("LH Click Target")
         {
-            leftHand.weight = 1;
-            head.weight = 1;
+            // which limb is being clicked
+            switch (clickTarget)
+            {
+                case "LH Click Target":
 
-            Vector3 targetPosition;
-            targetPosition = mainCam.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, mainCam.transform.position.z));
-            targetPosition.z = target.position.z;
-            target.transform.position = targetPosition;
+                    Debug.Log("Clicking left hand");
+                    leftHand.weight = 1;
+                    head.weight = 1;
+                    MoveLimb();
 
-           // target.transform.rotation = Quaternion.Euler(Vector3.up * degrees);
-        } 
+                    break;
+                case "RH Click Target":
+
+                    Debug.Log("Clicking left hand");
+                    rightHand.weight = 1;
+                   // head.weight = 1;
+                    MoveLimb();
+
+                    break;
+
+                default:
+                    Debug.Log("Not clicking a limb");
+                    break;
+            }
+            
+        }
+    }
+
+    private void MoveLimb()
+    {
+        Vector3 targetPosition;
+        float mouseX = Input.mousePosition.x;
+        float mouseY = Input.mousePosition.y;
+
+        targetPosition = mainCam.ScreenToWorldPoint(new Vector3(mouseX, mouseY, mainCam.transform.position.z));
+        targetPosition.z = target.position.z;
+        target.transform.position = targetPosition;
     }
 }
