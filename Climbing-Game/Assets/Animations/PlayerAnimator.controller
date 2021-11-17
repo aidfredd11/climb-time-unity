@@ -6,7 +6,7 @@ AnimatorController:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Character Animator
+  m_Name: PlayerAnimator
   serializedVersion: 5
   m_AnimatorParameters:
   - m_Name: Blend
@@ -38,8 +38,8 @@ AnimatorStateMachine:
   m_Name: Base Layer
   m_ChildStates:
   - serializedVersion: 1
-    m_State: {fileID: 6756725280198777574}
-    m_Position: {x: 160, y: 50, z: 0}
+    m_State: {fileID: 8764060308816485949}
+    m_Position: {x: 150, y: 50, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions: []
   m_EntryTransitions: []
@@ -49,15 +49,15 @@ AnimatorStateMachine:
   m_EntryPosition: {x: 50, y: 160, z: 0}
   m_ExitPosition: {x: 470, y: 60, z: 0}
   m_ParentStateMachinePosition: {x: 800, y: 20, z: 0}
-  m_DefaultState: {fileID: 6756725280198777574}
---- !u!1102 &6756725280198777574
+  m_DefaultState: {fileID: 8764060308816485949}
+--- !u!1102 &8764060308816485949
 AnimatorState:
   serializedVersion: 6
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Idle
+  m_Name: Warrior Idle
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions: []
@@ -70,7 +70,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: -203655887218126122, guid: fdb74f886f40f6540b47da6b0633f0b9, type: 3}
+  m_Motion: {fileID: -203655887218126122, guid: e05f21eebdaea0842a279cff97aed4cf, type: 3}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
