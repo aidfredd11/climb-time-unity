@@ -6,21 +6,28 @@ using UnityEngine.Animations.Rigging;
 public class Player : MonoBehaviour
 {
     [SerializeField] private Transform[] limbTargets;
-   // [SerializeField] private Transform headAimTarget;
     [SerializeField] private Camera mainCamera = null;
 
-   // [SerializeField] private MultiAimConstraint head = null;
     [SerializeField] private TwoBoneIKConstraint leftHand = null;
     [SerializeField] private TwoBoneIKConstraint rightHand = null;
     [SerializeField] private TwoBoneIKConstraint leftFoot = null;
     [SerializeField] private TwoBoneIKConstraint rightFoot = null;
- 
+
     private Transform activeTarget;
     private Animator animator;
-   // private RigBuilder rigBuilder;
 
-    private bool clicking;
     private string clickTarget;
+    private bool clicking = false;
+    private bool gameStarted = false;
+
+    public ClickState clickState;
+
+    public enum ClickState
+    {
+        started,
+        inProgress,
+        finished
+    }
 
     private void Start()
     {
@@ -28,22 +35,29 @@ public class Player : MonoBehaviour
             mainCamera = Camera.main;
 
         animator = GetComponent<Animator>();
-        //rigBuilder = GetComponent<RigBuilder>();
 
-       // head.weight = 0;
+        gameStarted = false;
+
         leftHand.weight = 0;
         rightHand.weight = 0;
         leftFoot.weight = 0;
         rightFoot.weight = 0;
+
+        clickState = ClickState.finished;
     }
 
     private void Update()
     {
         if (Input.GetMouseButtonDown(0))
         {
-            animator.speed = 0; // stop plaing idle animation
+            clickState = ClickState.started;
 
+            Time.timeScale = 1;
+
+            gameStarted = true;
             clicking = true;
+
+            animator.speed = 0; // stop plaing idle animation
 
             // find what they're clicking
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -58,33 +72,31 @@ public class Player : MonoBehaviour
                     case "LH Click Target":
                         activeTarget = limbTargets[0]; // make the left hand active
                         leftHand.weight = 1;
+                        clickState = ClickState.inProgress;
                         break;
 
                     case "RH Click Target":
                         activeTarget = limbTargets[1]; // right hand active
                         rightHand.weight = 1;
+                        clickState = ClickState.inProgress;
                         break;
 
                     case "LF Click Target":
                         activeTarget = limbTargets[2]; // make the left hand active
                         leftFoot.weight = 1;
+                        clickState = ClickState.inProgress;
                         break;
 
                     case "RF Click Target":
                         activeTarget = limbTargets[3]; // right hand active
                         rightFoot.weight = 1;
+                        clickState = ClickState.inProgress;
                         break;
 
                     default:
                         break;
                 }
 
-             /*   // aim the head at the limb if they have clicked one
-                if (activeTarget != null)
-                {
-                    head.weight = 1;
-                    HeadLookTarget(activeTarget);
-                } */
             }
 
         }
@@ -92,17 +104,53 @@ public class Player : MonoBehaviour
         if (Input.GetMouseButtonUp(0))
         {
             clicking = false;
+
+           // Time.timeScale = 0;
+            /*
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit))
+            {
+                string holdName = hit.collider.gameObject.name;
+                Debug.Log("Hold: " + holdName);
+
+                activeTarget.position = new Vector3(hit.transform.position.x, hit.transform.position.y, 5);
+            } */
+
             activeTarget = null;
+            clickState = ClickState.finished;
         }
 
     }
     private void LateUpdate()
     {
         // move the limb if one has been clicked
-        if(activeTarget != null && clicking)
+        if (activeTarget != null && clicking)
         {
             MoveLimb(activeTarget);
         }
+    }
+
+    public bool GetClicking()
+    {
+        return clicking;
+    }
+    public void SetClicking(bool value)
+    {
+        clicking = value;
+    }
+    public bool GetGameStarted()
+    {
+        return gameStarted;
+    }
+    public Transform GetActiveTarget()
+    {
+        return activeTarget;
+    }
+    public void SetActiveTargetPosition(Vector3 position)
+    {
+        if(activeTarget != null)
+            activeTarget.position = new Vector3(position.x, position.y, 4.9f);
     }
 
     // Helper functions
@@ -117,17 +165,4 @@ public class Player : MonoBehaviour
         target.transform.position = targetPosition;
     }
 
-/*    private void HeadLookTarget(Transform target)
-    {
-        headAimTarget.position = target.position;
-       /* var data = head.data.sourceObjects;
-        data.Clear();
-
-        WeightedTransform weightedTransform = new WeightedTransform(target, 1);
-        data.Insert(0, weightedTransform);
-        head.data.sourceObjects = data;
-
-        rigBuilder.Build(); 
-
-    } */
 }

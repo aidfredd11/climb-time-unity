@@ -4,16 +4,26 @@ using UnityEngine;
 
 public class MoveDown : MonoBehaviour
 {
-    [SerializeField] private float currentSpeed;
+    [SerializeField] private float speed;
     [SerializeField] private float bottomBound;
+
+    private Player playerScript;
+
+    private void Start()
+    {
+        playerScript = GameObject.Find("Player").GetComponent<Player>();
+    }
 
     private void Update()
     {
-        transform.Translate(-Vector3.up * currentSpeed * Time.deltaTime);
-        
-        if(transform.position.y < bottomBound)
+        if (playerScript.GetGameStarted())
         {
-            Destroy(gameObject);
+            transform.Translate(-Vector3.up * speed * Time.deltaTime);
+
+            if (transform.position.y < bottomBound)
+            {
+                Destroy(gameObject);
+            }
         }
     }
 
