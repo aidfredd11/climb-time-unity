@@ -16,9 +16,9 @@ public class BuildWall : MonoBehaviour
         for (int i = 0; i < 3; i++)
         {
             Instantiate(wallPanels[Random.Range(0, wallPanels.Length)], new Vector3(0, spawnHeight, 5), Quaternion.identity, gameObject.transform);
-            spawnHeight += 2.75f;
+            spawnHeight += 2.9f;//2.75f;
         }
-        spawnHeight = 5.5f;
+        spawnHeight = 5.8f;//5.5f;
 
         InvokeRepeating("AddWallPanel", 22, 22);
 

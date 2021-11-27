@@ -8,6 +8,7 @@ public class MoveDown : MonoBehaviour
     [SerializeField] private float bottomBound;
 
     private Player playerScript;
+    private Transform activeTarget;
 
     private void Start()
     {
@@ -16,15 +17,24 @@ public class MoveDown : MonoBehaviour
 
     private void Update()
     {
-        if (playerScript.GetGameStarted())
+        if (playerScript.GetGameStarted() && playerScript.GetClicking())
         {
-            transform.Translate(-Vector3.up * speed * Time.deltaTime);
+            activeTarget = playerScript.GetActiveTarget();
 
-            if (transform.position.y < bottomBound)
+            // move everything that isn't the selected limb
+            if(activeTarget != gameObject.transform)
             {
-                Destroy(gameObject);
+                Time.timeScale = 1;
+                transform.Translate(-Vector3.up * speed * Time.deltaTime);
             }
+           
         }
-    }
 
+        if (transform.position.y < bottomBound)
+        {
+            Destroy(gameObject);
+        }
+
+
+    }
 }
