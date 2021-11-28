@@ -5,8 +5,9 @@ using UnityEngine.Animations.Rigging;
 
 public class Player : MonoBehaviour
 {
-    [SerializeField] private Transform[] limbTargets;
     [SerializeField] private Camera mainCamera = null;
+
+    [SerializeField] private Transform[] limbTargets;
     [SerializeField] private Transform spineTransform;
     [SerializeField] private Transform hipTransform;
 
@@ -19,37 +20,36 @@ public class Player : MonoBehaviour
     private Animator animator;
 
     private string clickTarget;
+
     private bool clicking = false;
     private bool gameStarted = false;
 
     private void Start()
     {
+        gameStarted = false;
+
         if (mainCamera == null)
             mainCamera = Camera.main;
-
-        animator = GetComponent<Animator>();
-
-        gameStarted = false;
 
         leftHand.weight = 0;
         rightHand.weight = 0;
         leftFoot.weight = 0;
         rightFoot.weight = 0;
 
+        animator = GetComponent<Animator>();
     }
 
     private void Update()
     {
+        // Mouse is clicked down
         if (Input.GetMouseButtonDown(0))
         {
             gameStarted = true;
 
-            Time.timeScale = 0;
-            animator.speed = 0; // stop plaing idle animation
-
-            // find what they're clicking
+            // Raycast to find what they're clicking
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
+
             if (Physics.Raycast(ray, out hit))
             {
                 clickTarget = hit.collider.gameObject.name;
@@ -58,39 +58,22 @@ public class Player : MonoBehaviour
                 switch (clickTarget)
                 {
                     case "LH Click Target":
-                        //Time.timeScale = 1;
-                        clicking = true;
-                        activeTarget = limbTargets[0]; // make the left hand active
-                        leftHand.weight = 1;
-
+                        StartLimbDrag(limbTargets[0], leftHand);
                         break;
 
                     case "RH Click Target":
-                        //Time.timeScale = 1;
-                        clicking = true;
-                        activeTarget = limbTargets[1]; // right hand active
-                        rightHand.weight = 1;
-
+                        StartLimbDrag(limbTargets[1], rightHand);
                         break;
 
                     case "LF Click Target":
-                        //Time.timeScale = 1;
-                        clicking = true;
-                        activeTarget = limbTargets[2]; // make the left hand active
-                        leftFoot.weight = 1;
-
+                        StartLimbDrag(limbTargets[2], leftFoot);
                         break;
 
                     case "RF Click Target":
-                        //Time.timeScale = 1;
-                        clicking = true;
-                        activeTarget = limbTargets[3]; // right hand active
-                        rightFoot.weight = 1;
-
+                        StartLimbDrag(limbTargets[3], rightFoot);
                         break;
 
                     default:
-                        Time.timeScale = 0;
                         break;
                 }
 
@@ -98,21 +81,20 @@ public class Player : MonoBehaviour
 
         }
 
+        // Mouse is released
         if (Input.GetMouseButtonUp(0))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
+
             if (Physics.Raycast(ray, out hit))
             {
-                int layer = hit.collider.gameObject.layer;
-                Debug.Log("Layer: " + layer.ToString());
+                int layer = hit.collider.gameObject.layer; // is the thing being clicked a hold
 
                 // hold layer
                 if (layer == 6 && clicking)
                 {
-                    Transform snapPosition = hit.collider.gameObject.transform.GetChild(0);
-
-                    Vector3 holdPosition = snapPosition.position; //hit.collider.gameObject.transform.position; // get the position of the hold
+                    Vector3 holdPosition = hit.collider.gameObject.transform.GetChild(0).position; // get the position of the hold
 
                     float distanceToHold;
 
@@ -121,30 +103,27 @@ public class Player : MonoBehaviour
                     {
                         // distance from spine
                         distanceToHold = Vector3.Distance(holdPosition, spineTransform.position);
-                        Debug.Log("Distance to hold: " + distanceToHold.ToString());
 
-                        if(distanceToHold < 1f)
+                        if(distanceToHold < 1f) // only move target when in range of hold
                         {
                             SetActiveTargetPosition(holdPosition);
                         }
                         else
                         {
-                            Debug.Log("Hold too far away!!");
+                           // dont let them move
                         }
 
-                        // check distance for feet
+                    // check distance for feet
                     } else if(activeTarget == limbTargets[2] || activeTarget == limbTargets[3]){
 
+                        // find if hold is above or below the hips
                         var heading = holdPosition - hipTransform.position;
                         var distance = heading.magnitude;
                         var direction = (heading / distance).y;
 
-                        Debug.Log("Direction of hold: " + direction.ToString());
-
                         // distance from hips
                         distanceToHold = Vector3.Distance(holdPosition, hipTransform.position);
-                        Debug.Log("Distance to hold: " + distanceToHold.ToString());
-
+                      
                         // hold is below hips 
                         if(distanceToHold < 1.2f && direction < 0)
                         {
@@ -156,7 +135,7 @@ public class Player : MonoBehaviour
                         }
                         else
                         {
-                            Debug.Log("Hold out of reach!!");
+                           // dont let them move
                         }
 
                     }
@@ -179,32 +158,17 @@ public class Player : MonoBehaviour
         }
     }
 
-    public bool GetClicking()
+    // Helper functions
+    private void StartLimbDrag(Transform target, TwoBoneIKConstraint limb)
     {
-        return clicking;
-    }
-    public void SetClicking(bool value)
-    {
-        clicking = value;
-    }
-    public bool GetGameStarted()
-    {
-        return gameStarted;
-    }
-    public Transform GetActiveTarget()
-    {
-        return activeTarget;
-    }
-    public void SetActiveTarget(Transform targetTransform)
-    {
-        activeTarget = targetTransform;
-    }
-    public void SetActiveTargetPosition(Vector3 position)
-    {
-        if(activeTarget != null)
-            activeTarget.position = new Vector3(position.x, position.y, 4.9f);
-    }
+        animator.speed = 0; // stop plaing idle animation
+        Time.timeScale = 0;
 
+        clicking = true;
+        
+        activeTarget = target; // make the left hand active
+        limb.weight = 1;
+    }
     private void MoveLimb(Transform target)
     {
         Vector3 targetPosition;
@@ -214,6 +178,25 @@ public class Player : MonoBehaviour
         targetPosition = mainCamera.ScreenToWorldPoint(new Vector3(mouseX, mouseY, mainCamera.transform.position.z));
         targetPosition.z = target.position.z;
         target.transform.position = targetPosition;
+    }
+    private void SetActiveTargetPosition(Vector3 position)
+    {
+        if (activeTarget != null)
+            activeTarget.position = new Vector3(position.x, position.y, 4.9f);
+    }
+
+    // Functions used in other scripts
+    public bool GetClicking()
+    {
+        return clicking;
+    }
+    public bool GetGameStarted()
+    {
+        return gameStarted;
+    }
+    public Transform GetActiveTarget()
+    {
+        return activeTarget;
     }
 
 }
