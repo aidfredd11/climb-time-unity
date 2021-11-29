@@ -24,6 +24,11 @@ public class Player : MonoBehaviour
     private bool clicking = false;
     private bool gameStarted = false;
 
+    // Energy bar variables
+    public int maxEnergy;
+    public int currentEnergy;
+    public EnergyBar energyBar;
+
     private void Start()
     {
         gameStarted = false;
@@ -31,12 +36,17 @@ public class Player : MonoBehaviour
         if (mainCamera == null)
             mainCamera = Camera.main;
 
+        // animation
         leftHand.weight = 0;
         rightHand.weight = 0;
         leftFoot.weight = 0;
         rightFoot.weight = 0;
 
         animator = GetComponent<Animator>();
+
+        //energy bar
+        currentEnergy = maxEnergy;
+        energyBar.SetMaxEnergy(maxEnergy);
     }
 
     private void Update()
@@ -89,12 +99,12 @@ public class Player : MonoBehaviour
 
             if (Physics.Raycast(ray, out hit))
             {
-                int layer = hit.collider.gameObject.layer; // is the thing being clicked a hold
+                int layer = hit.collider.gameObject.layer; // has the mouse been released over a hold
 
                 // hold layer
                 if (layer == 6 && clicking)
                 {
-                    Vector3 holdPosition = hit.collider.gameObject.transform.GetChild(0).position; // get the position of the hold
+                    Vector3 holdPosition = hit.collider.gameObject.transform.GetChild(0).position; // get the position of the holds snap position
 
                     float distanceToHold;
 
@@ -128,7 +138,8 @@ public class Player : MonoBehaviour
                         if(distanceToHold < 1.2f && direction < 0)
                         {
                             SetActiveTargetPosition(holdPosition);
-                        // hold is above hips
+
+                            // hold is above hips
                         } else if(distanceToHold < 0.7f && direction > 0)
                         {
                             SetActiveTargetPosition(holdPosition);
@@ -137,18 +148,22 @@ public class Player : MonoBehaviour
                         {
                            // dont let them move
                         }
-
+                        
                     }
                                         
                 }
             }
 
+            // Decrease energy
+            UseEnergy(20);
+
             clicking = false;
             activeTarget = null;
-
         }
 
     }
+
+    //Follow the target with mouse
     private void LateUpdate()
     {
         // move the limb if one has been clicked
@@ -156,6 +171,7 @@ public class Player : MonoBehaviour
         {
             MoveLimb(activeTarget);
         }
+        
     }
 
     // Helper functions
@@ -185,6 +201,13 @@ public class Player : MonoBehaviour
             activeTarget.position = new Vector3(position.x, position.y, 4.9f);
     }
 
+    private void UseEnergy(int energy)
+    {
+        Debug.Log("Energy used");
+        currentEnergy -= energy;
+        energyBar.SetEnergy(currentEnergy);
+    }
+
     // Functions used in other scripts
     public bool GetClicking()
     {
@@ -197,6 +220,10 @@ public class Player : MonoBehaviour
     public Transform GetActiveTarget()
     {
         return activeTarget;
+    }
+    public Transform[] GetLimbTargets()
+    {
+        return limbTargets;
     }
 
 }

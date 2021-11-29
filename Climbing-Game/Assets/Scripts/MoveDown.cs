@@ -17,7 +17,7 @@ public class MoveDown : MonoBehaviour
     private void Start()
     {
         playerScript = GameObject.Find("Player").GetComponent<Player>();
-        buildWallScript = GameObject.Find("Wall").GetComponent<BuildWall>();
+        buildWallScript = GameObject.Find("Wall").GetComponent<BuildWall>();       
 
         startPosition = gameObject.transform.position;
     }
@@ -34,6 +34,7 @@ public class MoveDown : MonoBehaviour
             {
                 Time.timeScale = 1;
                 transform.Translate(-Vector3.up * speed * Time.deltaTime);
+
             }
            
         }
