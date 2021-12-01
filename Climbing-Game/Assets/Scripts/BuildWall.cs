@@ -19,9 +19,9 @@ public class BuildWall : MonoBehaviour
 
         for (int i = 0; i < maxWallPanels; i++)
         {
-            GameObject panel = Instantiate(wallPanelPrefabs[Random.Range(0, wallPanelPrefabs.Length)],
-                                    new Vector3(0, wallCoordY, wallCoordZ), Quaternion.identity, gameObject.transform);
-            
+            GameObject panel;
+            panel = GenerateWallPanels(i);
+
             panels[i] = panel; // add to list of panels
 
             wallCoordY += panel.transform.localScale.y; // increment height by size of panel
@@ -37,13 +37,29 @@ public class BuildWall : MonoBehaviour
 
         for (int i = 0; i < maxWallPanels; i++)
         {
-            GameObject panel = Instantiate(wallPanelPrefabs[Random.Range(0, wallPanelPrefabs.Length)],
-                                    new Vector3(0, wallCoordY, wallCoordZ), Quaternion.identity, gameObject.transform);
+            GameObject panel;
+            panel = GenerateWallPanels(i);
 
             panels[i] = panel; // add to list of panels
             wallCoordY += panel.transform.localScale.y; // increment height by size of panel
         }
+    }
 
+    private GameObject GenerateWallPanels(int i)
+    {
+        GameObject panel;
+
+        if (i == maxWallPanels - 1)
+        {
+            panel = Instantiate(wallPanelPrefabs[3], new Vector3(0, wallCoordY, wallCoordZ), Quaternion.identity, gameObject.transform);
+        }
+        else
+        {
+            panel = Instantiate(wallPanelPrefabs[Random.Range(0, wallPanelPrefabs.Length - 1)], // any panel that isnt a dyno
+                                new Vector3(0, wallCoordY, wallCoordZ), Quaternion.identity, gameObject.transform);
+        }
+
+        return panel;
     }
 
 }

@@ -5,6 +5,10 @@ TagManager:
   serializedVersion: 2
   tags:
   - Hold
+  - LeftHand
+  - RightHand
+  - DynoStart
+  - DynoEnd
   layers:
   - Default
   - TransparentFX

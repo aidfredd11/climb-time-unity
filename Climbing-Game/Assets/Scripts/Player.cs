@@ -16,23 +16,21 @@ public class Player : MonoBehaviour
     [SerializeField] private TwoBoneIKConstraint leftFoot = null;
     [SerializeField] private TwoBoneIKConstraint rightFoot = null;
 
+    [SerializeField] private float fallSpeed;
+
+    private Timer timer;
+    private Energy energy;
+    private GameController gameController;
+
     private Transform activeTarget;
     private Animator animator;
 
     private string clickTarget;
-
     private bool clicking = false;
-    private bool gameStarted = false;
 
-    // Energy bar variables
-    public int maxEnergy;
-    public int currentEnergy;
-    public EnergyBar energyBar;
-
+    
     private void Start()
     {
-        gameStarted = false;
-
         if (mainCamera == null)
             mainCamera = Camera.main;
 
@@ -43,28 +41,43 @@ public class Player : MonoBehaviour
         rightFoot.weight = 0;
 
         animator = GetComponent<Animator>();
+        timer = GetComponent<Timer>();
+        energy = GetComponent<Energy>();
+        gameController = GetComponent<GameController>();
 
-        //energy bar
-        currentEnergy = maxEnergy;
-        energyBar.SetMaxEnergy(maxEnergy);
     }
 
     private void Update()
     {
+        // out of energy or time
+        if(timer.GetCurrentTime() <= 0 || energy.GetCurrentEnergyLevel() <= 0)
+        {
+            gameController.GameOver = true;
+
+            timer.ToggleTimer(false);
+            energy.ToggleEnergy(false);
+
+            // make it look like they're falling
+            animator.SetBool("gameOver", true);
+            animator.speed = 1;
+
+            transform.Translate(-Vector3.up * fallSpeed * Time.deltaTime);
+            if (transform.position.y <= -5)
+                fallSpeed = 0;
+        }
+
         // Mouse is clicked down
         if (Input.GetMouseButtonDown(0))
         {
-            gameStarted = true;
+            gameController.GameStarted = true;
 
             // Raycast to find what they're clicking
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
-
-            if (Physics.Raycast(ray, out hit))
+            if (Physics.Raycast(ray, out hit) && !gameController.GameOver)
             {
-                clickTarget = hit.collider.gameObject.name;
-
                 // which limb is being clicked
+                clickTarget = hit.collider.gameObject.name;
                 switch (clickTarget)
                 {
                     case "LH Click Target":
@@ -97,15 +110,13 @@ public class Player : MonoBehaviour
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
 
-            if (Physics.Raycast(ray, out hit))
+            if (Physics.Raycast(ray, out hit) && !gameController.GameOver)
             {
-                int layer = hit.collider.gameObject.layer; // has the mouse been released over a hold
 
-                // hold layer
+                int layer = hit.collider.gameObject.layer; // has the mouse been released over a hold
                 if (layer == 6 && clicking)
                 {
                     Vector3 holdPosition = hit.collider.gameObject.transform.GetChild(0).position; // get the position of the holds snap position
-
                     float distanceToHold;
 
                     // check distance for hands
@@ -118,10 +129,6 @@ public class Player : MonoBehaviour
                         {
                             SetActiveTargetPosition(holdPosition);
                         }
-                        else
-                        {
-                           // dont let them move
-                        }
 
                     // check distance for feet
                     } else if(activeTarget == limbTargets[2] || activeTarget == limbTargets[3]){
@@ -133,29 +140,26 @@ public class Player : MonoBehaviour
 
                         // distance from hips
                         distanceToHold = Vector3.Distance(holdPosition, hipTransform.position);
-                      
+
                         // hold is below hips 
-                        if(distanceToHold < 1.2f && direction < 0)
+                        if (distanceToHold < 1.2f && direction < 0)
                         {
                             SetActiveTargetPosition(holdPosition);
 
                             // hold is above hips
-                        } else if(distanceToHold < 0.7f && direction > 0)
+                        }
+                        else if (distanceToHold < 0.7f && direction > 0)
                         {
                             SetActiveTargetPosition(holdPosition);
                         }
-                        else
-                        {
-                           // dont let them move
-                        }
-                        
                     }
-                                        
+
+                    // Decrease energy
+                    energy.ToggleEnergy(false);
+                    // reset timer
+                    timer.ResetTimer();
                 }
             }
-
-            // Decrease energy
-            UseEnergy(20);
 
             clicking = false;
             activeTarget = null;
@@ -181,7 +185,10 @@ public class Player : MonoBehaviour
         Time.timeScale = 0;
 
         clicking = true;
-        
+
+        timer.ToggleTimer(); // start the strength timer
+        energy.ToggleEnergy();
+
         activeTarget = target; // make the left hand active
         limb.weight = 1;
     }
@@ -201,21 +208,10 @@ public class Player : MonoBehaviour
             activeTarget.position = new Vector3(position.x, position.y, 4.9f);
     }
 
-    private void UseEnergy(int energy)
-    {
-        Debug.Log("Energy used");
-        currentEnergy -= energy;
-        energyBar.SetEnergy(currentEnergy);
-    }
-
     // Functions used in other scripts
     public bool GetClicking()
     {
         return clicking;
-    }
-    public bool GetGameStarted()
-    {
-        return gameStarted;
     }
     public Transform GetActiveTarget()
     {
@@ -224,6 +220,15 @@ public class Player : MonoBehaviour
     public Transform[] GetLimbTargets()
     {
         return limbTargets;
+    }
+
+    public Timer GetTimer()
+    {
+        return timer;
+    }
+    public Energy GetEnergy()
+    {
+        return energy;
     }
 
 }

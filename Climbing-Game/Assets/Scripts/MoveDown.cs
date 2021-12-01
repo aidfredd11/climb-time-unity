@@ -7,8 +7,9 @@ public class MoveDown : MonoBehaviour
     [SerializeField] private float speed;
     [SerializeField] private float bottomBound;
 
-    private Player playerScript;
+    private GameController gameController;
     private BuildWall buildWallScript;
+    private Player playerScript;
 
     private Transform activeTarget;
 
@@ -16,7 +17,10 @@ public class MoveDown : MonoBehaviour
 
     private void Start()
     {
-        playerScript = GameObject.Find("Player").GetComponent<Player>();
+        GameObject player = GameObject.Find("Player");
+
+        playerScript = player.GetComponent<Player>();
+        gameController = player.GetComponent<GameController>();
         buildWallScript = GameObject.Find("Wall").GetComponent<BuildWall>();       
 
         startPosition = gameObject.transform.position;
@@ -25,7 +29,7 @@ public class MoveDown : MonoBehaviour
     private void Update()
     {
         // start moving when they click
-        if (playerScript.GetGameStarted() && playerScript.GetClicking())
+        if (gameController.GameStarted && playerScript.GetClicking())
         {
             activeTarget = playerScript.GetActiveTarget();
 
@@ -37,7 +41,7 @@ public class MoveDown : MonoBehaviour
 
             }
            
-        }
+        } 
 
         if (transform.position.y < bottomBound)
         {
@@ -45,6 +49,8 @@ public class MoveDown : MonoBehaviour
         } 
 
     }
+
+    // used for spawning wall panels
     private void OnTriggerEnter(Collider other)
     {
       
