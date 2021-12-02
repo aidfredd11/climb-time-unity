@@ -15,7 +15,9 @@ public class Player : MonoBehaviour
     [SerializeField] private TwoBoneIKConstraint rightHand = null;
     [SerializeField] private TwoBoneIKConstraint leftFoot = null;
     [SerializeField] private TwoBoneIKConstraint rightFoot = null;
+    [SerializeField] private Rig characterRig;
 
+    [SerializeField] private Dyno[] dynoScripts;
     [SerializeField] private float fallSpeed;
 
     private Timer timer;
@@ -57,17 +59,38 @@ public class Player : MonoBehaviour
             timer.ToggleTimer(false);
             energy.ToggleEnergy(false);
 
-            // make it look like they're falling
+            // turn off the limb animation rigging
+            leftHand.weight = 0;
+            rightHand.weight = 0;
+            leftFoot.weight = 0;
+            rightFoot.weight = 0;
+
+            // play falling animation
             animator.SetBool("gameOver", true);
             animator.speed = 1;
 
+            // move down
             transform.Translate(-Vector3.up * fallSpeed * Time.deltaTime);
             if (transform.position.y <= -5)
                 fallSpeed = 0;
         }
 
+        // change the animation when a dyno starts
+        if(dynoScripts[0].DynoInitiated || dynoScripts[1].DynoInitiated)
+        {
+            characterRig.weight = 0;
+
+            animator.SetBool("dynoInit", true);
+            animator.speed = 1;
+
+            leftFoot.weight = 0;
+            rightFoot.weight = 0;
+            characterRig.weight = 1;
+
+        }
+
         // Mouse is clicked down
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0) && !dynoScripts[0].DynoInitiated && !dynoScripts[1].DynoInitiated)
         {
             gameController.GameStarted = true;
 
@@ -105,7 +128,7 @@ public class Player : MonoBehaviour
         }
 
         // Mouse is released
-        if (Input.GetMouseButtonUp(0))
+        if (Input.GetMouseButtonUp(0) && !dynoScripts[0].DynoInitiated && !dynoScripts[1].DynoInitiated)
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
