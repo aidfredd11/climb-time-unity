@@ -1,5 +1,5 @@
 # climb-time-unity
-Climbing game made for CS4482 App 3 Assignment.
+Climbing game made for CS4482 App 3 assignment.
 
 Climb Time is a cross-platform rhythm game. The game is set on a rock-climbing wall of infinite length that is generated as the game goes on.
 As described in the games' rules:
