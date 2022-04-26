@@ -10,5 +10,5 @@ At the beginning of each move your strength timer will start counting down.
 Release the mouse button over a hold before the timer runs out to avoid falling off.
 Your energy will decrease as you climb up the wall.
 The round ends when you run out of energy or if the strength timer expires before the successful completion of a move.
-At the end of each round, you will be prompted to increase either you max energy or max strength
+At the end of each round, you will be prompted to increase either you max energy or max strength.
   
